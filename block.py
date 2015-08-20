@@ -3,11 +3,13 @@ import numpy
 import pygame
 class Block():
 
-    def __init__(self, sprite, type, pos):
+    def __init__(self, sprite, type, pos, board_width, board_heigth):
         self._sprite = sprite
         self._sprite_size = sprite.get_rect().height
         self._type = type
         self._pos = pos
+        self.board_width = board_width
+        self.board_height = board_heigth
         self._pieces_pos = []
         self._pieces = numpy.array(self._calculate_pieces())
 
@@ -27,8 +29,14 @@ class Block():
         self._counter = 0
         return self._pieces_pos
 
+    @property
+    def rotation_counter(self):
+        return  self._rotation_counter
+
     def _calculate_pieces(self):
-        if self._type == 'I':
+        if self._type == '.':
+            pieces = [[1]]
+        elif self._type == 'I':
             pieces = [[1 for x in range(1)] for x in range(4)]
         elif self._type == 'O':
             pieces = [[1 for x in range(2)] for x in range(2)]
@@ -75,7 +83,7 @@ class Block():
     def _next_pos(self):
         x_offset, y_offset = self._get_rotation_offset()
 
-        pos = (0, 0)
+        pos = [0, 0]
         find = False
         counter = 0
         for x in range(len(self._pieces)):
@@ -84,7 +92,7 @@ class Block():
                     if counter >= self._counter:
                         self._counter += 1
                         find = True
-                        pos = (x + self._pos[0] + x_offset, y + self._pos[1] + y_offset)
+                        pos = [x + self._pos[0] + x_offset, y + self._pos[1] + y_offset]
                         self._pieces_pos.append(pos)
                         counter += 1
                         break
@@ -104,7 +112,6 @@ class Block():
     def rotate_90(self, inverse = False):
         self._pieces = numpy.rot90(self._pieces)
         self._rotation_counter += 1
-        print self.pieces_pos
 
     def move(self, direction, distance = None, block = None):
         if distance is None:
@@ -120,24 +127,31 @@ class Block():
             new_pos[0] = block._pos[0] + distance
         elif direction == 'left':
             new_pos[0] = block._pos[0] - distance
+        elif direction =='rotate':
+            self.rotate_90()
 
         block._pos = new_pos
 
     def detect_collision(self, pos, direction):
-        block = Block(self._sprite, self._type, self._pos)
+        block = Block(self._sprite, self._type, self._pos, self.board_width, self.board_height)
+        for x in range(self.rotation_counter):
+            block.rotate_90()
         self.move(direction, block=block)
 
         for xy in block.pieces_pos:
             if xy == pos:
                 return True
 
-    def is_in_bounds(self, board_width, board_height, direction):
+    def is_in_bounds(self, direction):
         min_x = 0
-        max_x = board_width
-        max_y = board_height
+        max_x = self.board_width
+        max_y = self.board_height
 
-        block = Block(self._sprite,  self._type, self._pos)
-        self.move(direction, block=block)
+        block = Block(self._sprite,  self._type, self._pos, self.board_width, self.board_height)
+        for x in range(self.rotation_counter):
+            block.rotate_90()
+        block.move(direction, block=block)
+
         positions = block.pieces_pos
 
         for xy in positions:
@@ -148,14 +162,16 @@ class Block():
 
     def get_pieces_as_blocks(self):
         blocks = []
-        for x in self._pieces_pos:
-            blocks.append(Block(self._sprite, '.', x))
+        for x in self.pieces_pos:
+            blocks.append(Block(self._sprite, '.', x, self.board_width, self.board_height))
 
         return blocks
 
     def render(self, screen):
+        iter = len(self.pieces_pos)
         self._pieces_pos = []
-        for x in range(4):
+
+        for x in range(iter):
             screen.blit(self._sprite, tuple(self._sprite_size * x for x in self._next_pos()))
 
         self._counter = 0

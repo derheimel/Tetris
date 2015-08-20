@@ -47,7 +47,7 @@ def controller_tick():
             if event.key == pygame.K_q:
                 return 0
             elif event.key == pygame.K_UP:
-                cur_block.rotate_90()
+                rotate()
             elif event.key == pygame.K_DOWN:
                 down()
             elif event.key == pygame.K_RIGHT:
@@ -55,12 +55,49 @@ def controller_tick():
             elif event.key == pygame.K_LEFT:
                 left_right('left')
             elif event.key == pygame.K_SPACE:
-                cur_block.move('down', board_height + 2)
+                all_the_way_down()
+                new_block()
 
     return 1
 
+def new_block():
+    global cur_block
+    for x in cur_block.get_pieces_as_blocks():
+        blocks.append(x)
+
+    cur_block = Block(yellow, 'I', [3, 0], board_width, board_height)
+
+def all_the_way_down():
+    while cur_block.is_in_bounds('down'):
+        if len(blocks) == 0:
+            cur_block.move('down')
+        else:
+            found_collision = False
+            for x in blocks:
+                if cur_block.detect_collision(x.pos, 'down'):
+                    found_collision = True
+
+            if not found_collision:
+                cur_block.move('down')
+            else:
+                return
+
+def rotate():
+    if cur_block.is_in_bounds('rotate'):
+        cur_block.rotate_90()
+    else:
+        cur_block.move('left')
+        if cur_block.is_in_bounds('rotate'):
+            cur_block.rotate_90()
+        else:
+            cur_block.move('right', 2)
+            if cur_block.is_in_bounds('rotate'):
+                cur_block.rotate_90()
+            else:
+                cur_block.move('left')
+
 def down():
-    if cur_block.is_in_bounds(board_width, board_height, 'down'):
+    if cur_block.is_in_bounds('down'):
         for x in blocks:
             if cur_block.detect_collision(x.pos, 'down'):
                 return False
@@ -71,8 +108,7 @@ def down():
     return True
 
 def left_right(direction):
-    if cur_block.is_in_bounds(board_width, board_height, direction):
-        print 'is in bounds'
+    if cur_block.is_in_bounds(direction):
         for x in blocks:
             if cur_block.detect_collision(x.pos, direction):
                 return
@@ -123,7 +159,7 @@ def render_borders():
 
 def main():
     global cur_block
-    cur_block = Block(green, 'Z', [0, 0])
+    cur_block = Block(green, 'I', [3, 0], board_width, board_height)
 
     while 1:
         if not controller_tick():
