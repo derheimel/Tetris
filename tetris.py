@@ -34,6 +34,8 @@ violet = pygame.transform.scale(violet,  block_tuple)
 yellow = pygame.transform.scale(yellow, block_tuple)
 
 clock = pygame.time.Clock()
+elapsed = 0
+speed = 1
 
 blocks = []
 cur_block = None
@@ -49,7 +51,8 @@ def controller_tick():
             elif event.key == pygame.K_UP:
                 rotate()
             elif event.key == pygame.K_DOWN:
-                down()
+                if not down():
+                    new_block()
             elif event.key == pygame.K_RIGHT:
                 left_right('right')
             elif event.key == pygame.K_LEFT:
@@ -58,6 +61,13 @@ def controller_tick():
                 all_the_way_down()
                 new_block()
 
+    global elapsed
+    elapsed += clock.get_time()
+    if elapsed >= (1000 / speed):
+        if not down():
+            new_block()
+        elapsed -= (1000 / speed)
+
     return 1
 
 def new_block():
@@ -65,7 +75,46 @@ def new_block():
     for x in cur_block.get_pieces_as_blocks():
         blocks.append(x)
 
+    check_rows()
     cur_block = Block(yellow, 'I', [3, 0], board_width, board_height)
+
+def check_rows():
+    full_rows = []
+    for y in range(board_height):
+        full_row = True
+        for x in range(board_width):
+            found = False
+            for block in blocks:
+                if block.pos == [x, y]:
+                    found = True
+                    break
+
+            if not found:
+                full_row = False
+                break
+
+        if full_row:
+            print "full row!"
+            delete_row(y)
+            full_rows.append(y)
+
+    for row in full_rows:
+        pull_everything_above(row)
+
+def pull_everything_above(row):
+    for block in blocks:
+        if block.pos[1] < row:
+            block.move('down')
+
+def delete_row(y):
+    global blocks
+    new_blocks = []
+    for x in range(len(blocks)):
+        block = blocks[x]
+        if block.pos[1] != y:
+            new_blocks.append(block)
+
+    blocks = new_blocks
 
 def all_the_way_down():
     while cur_block.is_in_bounds('down'):
