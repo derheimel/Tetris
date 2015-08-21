@@ -6,13 +6,20 @@ from block  import Block
 
 init = pygame.init()
 
+volume = 0.4
+
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=2048)
+pygame.mixer.music.load('sound/typea.mp3')
+pygame.mixer.music.set_volume(volume)
+pygame.mixer.music.play(-1)
+
 board_width = 10
 board_height = 20
 
 block_size = 32
 block_tuple = (block_size, block_size)
 
-status_surface_width = 180
+status_surface_width = 150
 
 screen_width = board_width * block_size + status_surface_width
 screen_height = board_height * block_size
@@ -47,7 +54,7 @@ yellow = pygame.transform.scale(yellow, block_tuple)
 
 clock = pygame.time.Clock()
 elapsed = 0
-speed = 1.
+speed = 3.
 
 score = 0
 full_rows = 0
@@ -77,6 +84,12 @@ def controller_tick():
             elif event.key == pygame.K_SPACE:
                 all_the_way_down()
                 new_block()
+            elif event.key == pygame.K_m:
+                if pygame.mixer.music.get_volume() != 0:
+                    pygame.mixer.music.set_volume(0)
+                else:
+                    pygame.mixer.music.set_volume(volume)
+
 
     global elapsed
     elapsed += clock.get_time()
