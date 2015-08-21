@@ -37,11 +37,15 @@ class Block():
         if self._type == '.':
             pieces = [[1]]
         elif self._type == 'I':
-            pieces = [[1 for x in range(1)] for x in range(4)]
+            pieces = [[0 for x in range(4)] for x in range(4)]
+            pieces[0][1] = 1
+            pieces[1][1] = 1
+            pieces[2][1] = 1
+            pieces[3][1] = 1
         elif self._type == 'O':
             pieces = [[1 for x in range(2)] for x in range(2)]
         else:
-            pieces = [[0 for x in range(2)] for x in range(3)]
+            pieces = [[0 for x in range(3)] for x in range(3)]
             if self._type == 'J':
                 pieces[0][0] = 1
                 pieces[0][1] = 1
@@ -70,18 +74,18 @@ class Block():
 
         return pieces
 
-    def _get_rotation_offset(self):
-        x_offset = 0
-        y_offset = 0
-        if self._type == 'I':
-            if self._rotation_counter % 4 == 1 or self._rotation_counter % 4  == 3:
-                x_offset = 1
-                y_offset = -2
-
-        return x_offset, y_offset
+    # def _get_rotation_offset(self):
+    #     x_offset = 0
+    #     y_offset = 0
+    #     if self._type == 'I':
+    #         if self._rotation_counter % 4 == 1 or self._rotation_counter % 4  == 3:
+    #             x_offset = 1
+    #             y_offset = -2
+    #
+    #     return x_offset, y_offset
 
     def _next_pos(self):
-        x_offset, y_offset = self._get_rotation_offset()
+        # x_offset, y_offset = self._get_rotation_offset()
 
         pos = [0, 0]
         find = False
@@ -92,7 +96,7 @@ class Block():
                     if counter >= self._counter:
                         self._counter += 1
                         find = True
-                        pos = [x + self._pos[0] + x_offset, y + self._pos[1] + y_offset]
+                        pos = [x + self._pos[0], y + self._pos[1]]
                         self._pieces_pos.append(pos)
                         counter += 1
                         break

@@ -1,4 +1,5 @@
 __author__ = 'Aaron'
+import random
 import pygame
 from pygame import Color
 from block  import Block
@@ -35,8 +36,13 @@ yellow = pygame.transform.scale(yellow, block_tuple)
 
 clock = pygame.time.Clock()
 elapsed = 0
-speed = 1
+speed = 1.
 
+score = 0
+full_rows = 0
+level = 0
+
+block_types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
 blocks = []
 cur_block = None
 next_block = None
@@ -76,7 +82,8 @@ def new_block():
         blocks.append(x)
 
     check_rows()
-    cur_block = Block(yellow, 'I', [3, 0], board_width, board_height)
+    new_type = random.choice(block_types)
+    cur_block = Block(yellow, new_type, [3, 0], board_width, board_height)
 
 def check_rows():
     full_rows = []
@@ -94,7 +101,6 @@ def check_rows():
                 break
 
         if full_row:
-            print "full row!"
             delete_row(y)
             full_rows.append(y)
 
