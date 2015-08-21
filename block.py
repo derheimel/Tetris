@@ -1,7 +1,6 @@
 __author__ = 'Aaron'
 import numpy
-import pygame
-class Block():
+class Block(object):
 
     def __init__(self, sprite, type, pos, board_width, board_heigth):
         self._sprite = sprite
@@ -16,9 +15,24 @@ class Block():
         self._counter = 0
         self._rotation_counter = 0
 
+    def get_size(self):
+        return len(self._pieces), len(self._pieces[0])
+
+    @property
+    def sprite(self):
+        return self._sprite
+
+    @property
+    def type(self):
+        return self._type
+
     @property
     def pos(self):
         return self._pos
+
+    @pos.setter
+    def pos(self, value):
+        self._pos = value
 
     @property
     def pieces_pos(self):
@@ -97,11 +111,6 @@ class Block():
 
         return pos
 
-    def get_rect(self):
-        width = len(self._pieces) * self._sprite_size
-        height = len(self._pieces) * self._sprite_size
-        return self._pos, (width, height)
-
     def rotate_90(self, inverse = False):
         self._pieces = numpy.rot90(self._pieces)
         self._rotation_counter += 1
@@ -160,11 +169,17 @@ class Block():
 
         return blocks
 
-    def render(self, screen):
+    def render(self, screen, pos = None):
         iter = len(self.pieces_pos)
         self._pieces_pos = []
 
-        for x in range(iter):
-            screen.blit(self._sprite, tuple(self._sprite_size * x for x in self._next_pos()))
+        if pos is not None:
+            for x in range(iter):
+                next_pos = self._next_pos()
+                screen.blit(self.sprite, [pos[0] + (next_pos[0] * self._sprite_size), pos[1] + (next_pos[1] * self._sprite_size)])
+
+        else:
+            for x in range(iter):
+                screen.blit(self.sprite, tuple(self._sprite_size * x for x in self._next_pos()))
 
         self._counter = 0

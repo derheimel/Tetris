@@ -13,11 +13,19 @@ block_size = 32
 block_tuple = (block_size, block_size)
 
 status_surface_width = 180
-# next_block_surface = pygame.
 
 screen_width = board_width * block_size + status_surface_width
 screen_height = board_height * block_size
 screen = pygame.display.set_mode((screen_width, screen_height))
+
+next_block_surface = (
+    screen_width - status_surface_width + (status_surface_width / 10),
+    screen_height / 10,
+    status_surface_width - (status_surface_width / 5),
+    status_surface_width - (status_surface_width / 5)
+)
+
+next_block_pos = None
 
 border_size = 5
 
@@ -81,12 +89,31 @@ def controller_tick():
 
 def new_block():
     global cur_block
-    for x in cur_block.get_pieces_as_blocks():
-        blocks.append(x)
+    global next_block
+    if cur_block is not None:
+        for x in cur_block.get_pieces_as_blocks():
+            blocks.append(x)
 
-    check_rows()
+        check_rows()
+        cur_block = Block(next_block.sprite, next_block.type, [3, 0], board_width, board_height)
+
+    else:
+        new_type = random.choice(block_types)
+        cur_block = Block(new_type[0], new_type[1], [3, 0], board_width, board_height)
+
+    new_next_block()
+
+def new_next_block():
+    global next_block
+    global next_block_pos
     new_type = random.choice(block_types)
-    cur_block = Block(new_type[0], new_type[1], [3, 0], board_width, board_height)
+    next_block = Block(new_type[0], new_type[1], [0, 0], board_width, board_height)
+    width, height = next_block.get_size()
+    width *= block_size
+    height *= block_size
+    x = next_block_surface[0] + next_block_surface[2] / 2 - width / 2
+    y = next_block_surface[1] + next_block_surface[3] / 2 - height / 2
+    next_block_pos = [x, y]
 
 def check_rows():
     full_rows = []
@@ -182,6 +209,7 @@ def view_tick():
         block.render(screen)
 
     cur_block.render(screen)
+    next_block.render(screen, pos = next_block_pos)
 
     pygame.display.update()
 
@@ -216,8 +244,7 @@ def render_borders():
     )
 
 def main():
-    global cur_block
-    cur_block = Block(green, 'I', [3, 0], board_width, board_height)
+    new_block()
 
     while 1:
         if not controller_tick():
