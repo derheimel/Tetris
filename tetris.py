@@ -12,7 +12,10 @@ board_height = 20
 block_size = 32
 block_tuple = (block_size, block_size)
 
-screen_width = board_width * block_size
+status_surface_width = 180
+# next_block_surface = pygame.
+
+screen_width = board_width * block_size + status_surface_width
 screen_height = board_height * block_size
 screen = pygame.display.set_mode((screen_width, screen_height))
 
@@ -42,7 +45,7 @@ score = 0
 full_rows = 0
 level = 0
 
-block_types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z']
+block_types = [(turquoise, 'I'), (blue, 'J'), (orange, 'L'), (yellow, 'O'), (green, 'S'), (violet, 'T'), (red, 'Z')]
 blocks = []
 cur_block = None
 next_block = None
@@ -83,7 +86,7 @@ def new_block():
 
     check_rows()
     new_type = random.choice(block_types)
-    cur_block = Block(yellow, new_type, [3, 0], board_width, board_height)
+    cur_block = Block(new_type[0], new_type[1], [3, 0], board_width, board_height)
 
 def check_rows():
     full_rows = []

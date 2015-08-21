@@ -74,18 +74,7 @@ class Block():
 
         return pieces
 
-    # def _get_rotation_offset(self):
-    #     x_offset = 0
-    #     y_offset = 0
-    #     if self._type == 'I':
-    #         if self._rotation_counter % 4 == 1 or self._rotation_counter % 4  == 3:
-    #             x_offset = 1
-    #             y_offset = -2
-    #
-    #     return x_offset, y_offset
-
     def _next_pos(self):
-        # x_offset, y_offset = self._get_rotation_offset()
 
         pos = [0, 0]
         find = False
