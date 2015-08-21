@@ -115,30 +115,29 @@ class Block(object):
         self._pieces = numpy.rot90(self._pieces)
         self._rotation_counter += 1
 
-    def move(self, direction, distance = None, block = None):
+    def move(self, direction, distance = None, ):
         if distance is None:
             distance = 1
 
-        if block is None:
-            block = self
-
-        new_pos = list(block._pos)
+        new_pos = list(self._pos)
         if direction == 'down':
-            new_pos[1] = block._pos[1] + distance
+            new_pos[1] = self._pos[1] + distance
         elif direction == 'right':
-            new_pos[0] = block._pos[0] + distance
+            new_pos[0] = self._pos[0] + distance
         elif direction == 'left':
-            new_pos[0] = block._pos[0] - distance
+            new_pos[0] = self._pos[0] - distance
         elif direction =='rotate':
             self.rotate_90()
 
-        block._pos = new_pos
+        self._pos = new_pos
 
     def detect_collision(self, pos, direction):
         block = Block(self._sprite, self._type, self._pos, self.board_width, self.board_height)
         for x in range(self.rotation_counter):
             block.rotate_90()
-        self.move(direction, block=block)
+        block.move(direction)
+        if direction == 'rotate':
+            block.rotate_90()
 
         for xy in block.pieces_pos:
             if xy == pos:
@@ -152,7 +151,7 @@ class Block(object):
         block = Block(self._sprite,  self._type, self._pos, self.board_width, self.board_height)
         for x in range(self.rotation_counter):
             block.rotate_90()
-        block.move(direction, block=block)
+        block.move(direction)
 
         positions = block.pieces_pos
 

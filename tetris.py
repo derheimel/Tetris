@@ -182,7 +182,8 @@ def all_the_way_down():
 
 def rotate():
     if cur_block.is_in_bounds('rotate'):
-        cur_block.rotate_90()
+        if not detect_collision('rotate'):
+            cur_block.rotate_90()
     else:
         cur_block.move('left')
         if cur_block.is_in_bounds('rotate'):
@@ -192,7 +193,15 @@ def rotate():
             if cur_block.is_in_bounds('rotate'):
                 cur_block.rotate_90()
             else:
-                cur_block.move('left')
+                 cur_block.move('left')
+
+
+def detect_collision(direction):
+    for x in blocks:
+        if cur_block.detect_collision(x.pos, direction):
+            return True
+
+    return False
 
 def down():
     if cur_block.is_in_bounds('down'):
