@@ -19,6 +19,8 @@ board_height = 20
 block_size = 32
 block_tuple = (block_size, block_size)
 
+smallfont = pygame.font.SysFont('comicsansms', 18)
+
 status_surface_width = 150
 
 screen_width = board_width * block_size + status_surface_width
@@ -31,6 +33,8 @@ next_block_surface = (
     status_surface_width - (status_surface_width / 5),
     status_surface_width - (status_surface_width / 5)
 )
+
+
 
 next_block_pos = None
 
@@ -59,6 +63,8 @@ speed = 3.
 score = 0
 full_rows = 0
 level = 0
+lines_levelup = 10
+line_counter = 0
 
 block_types = [(turquoise, 'I'), (blue, 'J'), (orange, 'L'), (yellow, 'O'), (green, 'S'), (violet, 'T'), (red, 'Z')]
 blocks = []
@@ -150,6 +156,34 @@ def check_rows():
     for row in full_rows:
         pull_everything_above(row)
 
+    calc_score(full_rows)
+
+def calc_score(full_rows):
+    global score
+    global line_counter
+    global level
+    global lines_levelup
+    global speed
+    plus = 0
+    lines = len(full_rows)
+    line_counter += lines
+    if lines == 1:
+        plus = 40
+    elif lines == 2:
+        plus = 100
+    elif lines == 3:
+        plus = 300
+    elif lines == 4:
+        plus = 1200
+
+    plus *= level + 1
+    score += plus
+
+    if line_counter >= lines_levelup * (level + 1):
+        line_counter = 0
+        level += 1
+        speed *= 1.2
+
 def pull_everything_above(row):
     for block in blocks:
         if block.pos[1] < row:
@@ -226,6 +260,7 @@ def view_tick():
     screen.fill(Color('white'))
 
     render_borders()
+    render_text()
 
     for block in blocks:
         block.render(screen)
@@ -234,6 +269,17 @@ def view_tick():
     next_block.render(screen, pos = next_block_pos)
 
     pygame.display.update()
+
+def render_text():
+    global speed
+    text = smallfont.render('Score: ' + str(score), True, Color('black'))
+    x = next_block_surface[0]
+    y = next_block_surface[1] + next_block_surface[3] + 30
+    screen.blit(text, [x, y])
+
+    text = smallfont.render('Level: ' + str(level), True, Color('black'))
+    y += 30
+    screen.blit(text, [x, y])
 
 def render_borders():
     pygame.draw.line(
