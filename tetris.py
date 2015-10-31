@@ -63,7 +63,7 @@ speed = 3.
 score = 0
 full_rows = 0
 level = 0
-lines_levelup = 10
+lines_levelup = 5
 line_counter = 0
 
 block_types = [(turquoise, 'I'), (blue, 'J'), (orange, 'L'), (yellow, 'O'), (green, 'S'), (violet, 'T'), (red, 'Z')]
@@ -106,6 +106,7 @@ def controller_tick():
 
     return 1
 
+"""Places the block as part of the scenery and generates a new block"""
 def new_block():
     global cur_block
     global next_block
@@ -122,6 +123,7 @@ def new_block():
 
     new_next_block()
 
+"""Generates a new block. Is called by new_block()"""
 def new_next_block():
     global next_block
     global next_block_pos
@@ -134,6 +136,7 @@ def new_next_block():
     y = next_block_surface[1] + next_block_surface[3] / 2 - height / 2
     next_block_pos = [x, y]
 
+"""Checks if there are full rows and deletes them."""
 def check_rows():
     full_rows = []
     for y in range(board_height):
@@ -182,8 +185,9 @@ def calc_score(full_rows):
     if line_counter >= lines_levelup * (level + 1):
         line_counter = 0
         level += 1
-        speed *= 1.2
+        speed *= 1.15
 
+"""Moves every row above <row> down until they touch"""
 def pull_everything_above(row):
     for block in blocks:
         if block.pos[1] < row:
@@ -199,6 +203,7 @@ def delete_row(y):
 
     blocks = new_blocks
 
+"""Moves the current block down to the bottom"""
 def all_the_way_down():
     while cur_block.is_in_bounds('down'):
         if len(blocks) == 0:
@@ -229,7 +234,8 @@ def rotate():
             else:
                  cur_block.move('left')
 
-
+"""Checks if the current block would collide with something
+when moved in <direction>"""
 def detect_collision(direction):
     for x in blocks:
         if cur_block.detect_collision(x.pos, direction):
@@ -237,6 +243,7 @@ def detect_collision(direction):
 
     return False
 
+"""Checks if the current block can move down without touching something"""
 def down():
     if cur_block.is_in_bounds('down'):
         for x in blocks:
@@ -248,6 +255,7 @@ def down():
     cur_block.move('down')
     return True
 
+"""Moves the current block to <direction>"""
 def left_right(direction):
     if cur_block.is_in_bounds(direction):
         for x in blocks:

@@ -131,13 +131,12 @@ class Block(object):
 
         self._pos = new_pos
 
+
     def detect_collision(self, pos, direction):
         block = Block(self._sprite, self._type, self._pos, self.board_width, self.board_height)
         for x in range(self.rotation_counter):
             block.rotate_90()
         block.move(direction)
-        if direction == 'rotate':
-            block.rotate_90()
 
         for xy in block.pieces_pos:
             if xy == pos:
