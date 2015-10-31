@@ -61,7 +61,8 @@ yellow = pygame.transform.scale(yellow, block_tuple)
 
 clock = pygame.time.Clock()
 elapsed = 0
-speed = 3.
+default_speed = 2.
+speed = default_speed
 
 score = 0
 full_rows = 0
@@ -87,8 +88,11 @@ def controller_tick():
                     pygame.mixer.music.set_volume(0)
                 else:
                     pygame.mixer.music.set_volume(volume)
+            elif event.key == pygame.K_r:
+                restart()
+                return 1
             if game_over:
-                break
+                return 1
             elif event.key == pygame.K_UP:
                 rotate()
             elif event.key == pygame.K_DOWN:
@@ -102,9 +106,6 @@ def controller_tick():
                 all_the_way_down()
                 new_block()
 
-    if game_over:
-        return 1
-
     global elapsed
     elapsed += clock.get_time()
     if elapsed >= (1000 / speed):
@@ -117,6 +118,27 @@ def controller_tick():
         elapsed -= (1000 / speed)
 
     return 1
+
+"""Restarts the game"""
+def restart():
+    global cur_block
+    global next_block
+    global blocks
+    global score
+    global level
+    global game_over
+    global elapsed
+    global speed
+    cur_block = None
+    next_block = None
+    blocks = []
+    score = 0
+    level = 0
+    game_over = False
+    elapsed = 0
+    speed = default_speed
+    new_block()
+
 
 """Places the current block as part of the scenery and generates a new block"""
 def new_block():
@@ -281,6 +303,8 @@ def left_right(direction):
         cur_block.move(direction)
 
 def view_tick():
+    if cur_block is None:
+        return
     screen.fill(Color('white'))
 
     render_borders()
@@ -311,7 +335,7 @@ def render_text():
         y += line_height + 5
         text = smallfont.render(text, True, Color('black'))
         screen.blit(text, [x, y])
-        
+
     text = smallfont.render('Score: ' + str(score), True, Color('black'))
     x = next_block_surface[0]
     y = next_block_surface[1] + next_block_surface[3] + 30
