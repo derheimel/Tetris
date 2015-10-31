@@ -19,7 +19,10 @@ board_height = 20
 block_size = 32
 block_tuple = (block_size, block_size)
 
+default_location = [3, -2]
+
 smallfont = pygame.font.SysFont('comicsansms', 18)
+bigfont = pygame.font.SysFont('comicsansms', 36)
 
 status_surface_width = 150
 
@@ -65,6 +68,7 @@ full_rows = 0
 level = 0
 lines_levelup = 5
 line_counter = 0
+game_over = False
 
 block_types = [(turquoise, 'I'), (blue, 'J'), (orange, 'L'), (yellow, 'O'), (green, 'S'), (violet, 'T'), (red, 'Z')]
 blocks = []
@@ -78,6 +82,13 @@ def controller_tick():
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
                 return 0
+            elif event.key == pygame.K_m:
+                if pygame.mixer.music.get_volume() != 0:
+                    pygame.mixer.music.set_volume(0)
+                else:
+                    pygame.mixer.music.set_volume(volume)
+            if game_over:
+                break
             elif event.key == pygame.K_UP:
                 rotate()
             elif event.key == pygame.K_DOWN:
@@ -90,23 +101,24 @@ def controller_tick():
             elif event.key == pygame.K_SPACE:
                 all_the_way_down()
                 new_block()
-            elif event.key == pygame.K_m:
-                if pygame.mixer.music.get_volume() != 0:
-                    pygame.mixer.music.set_volume(0)
-                else:
-                    pygame.mixer.music.set_volume(volume)
 
+    if game_over:
+        return 1
 
     global elapsed
     elapsed += clock.get_time()
     if elapsed >= (1000 / speed):
         if not down():
+            if cur_block.pos[1] == default_location[1]:
+                global game_over
+                game_over = True
+                return 1
             new_block()
         elapsed -= (1000 / speed)
 
     return 1
 
-"""Places the block as part of the scenery and generates a new block"""
+"""Places the current block as part of the scenery and generates a new block"""
 def new_block():
     global cur_block
     global next_block
@@ -115,11 +127,11 @@ def new_block():
             blocks.append(x)
 
         check_rows()
-        cur_block = Block(next_block.sprite, next_block.type, [3, 0], board_width, board_height)
+        cur_block = Block(next_block.sprite, next_block.type, default_location, board_width, board_height)
 
     else:
         new_type = random.choice(block_types)
-        cur_block = Block(new_type[0], new_type[1], [3, 0], board_width, board_height)
+        cur_block = Block(new_type[0], new_type[1], default_location, board_width, board_height)
 
     new_next_block()
 
@@ -219,6 +231,10 @@ def all_the_way_down():
             else:
                 return
 
+"""Rotates the block with a horizontal tolerance of 1,
+meaning that the rotation is still successful if a
+collision would occur. In case of a collision the block
+is moved 1 field left or right if that solves the collision."""
 def rotate():
     if cur_block.is_in_bounds('rotate'):
         if not detect_collision('rotate'):
@@ -270,16 +286,32 @@ def view_tick():
     render_borders()
     render_text()
 
-    for block in blocks:
-        block.render(screen)
+    if not game_over:
+        for block in blocks:
+            block.render(screen)
 
-    cur_block.render(screen)
+        cur_block.render(screen)
     next_block.render(screen, pos = next_block_pos)
 
     pygame.display.update()
 
 def render_text():
     global speed
+
+    if game_over:
+        text = 'GAME OVER'
+        line_height = bigfont.size(text)[1]
+        x = (screen_width - status_surface_width) / 2 - bigfont.size(text)[0] / 2
+        y = screen_height / 4
+        text = bigfont.render(text, True, Color('black'))
+        screen.blit(text, [x, y])
+
+        text = 'press r to start over'
+        x = (screen_width - status_surface_width) / 2 - smallfont.size(text)[0] / 2
+        y += line_height + 5
+        text = smallfont.render(text, True, Color('black'))
+        screen.blit(text, [x, y])
+        
     text = smallfont.render('Score: ' + str(score), True, Color('black'))
     x = next_block_surface[0]
     y = next_block_surface[1] + next_block_surface[3] + 30
