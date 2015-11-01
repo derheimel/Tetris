@@ -111,9 +111,10 @@ class Block(object):
 
         return pos
 
-    def rotate_90(self, inverse = False):
+    def rotate_90(self):
         self._pieces = numpy.rot90(self._pieces)
         self._rotation_counter += 1
+        self._rotation_counter %= 4
 
     def move(self, direction, distance = None, ):
         if distance is None:
