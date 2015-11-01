@@ -50,6 +50,7 @@ red = pygame.image.load('gfx/red.png')
 turquoise = pygame.image.load('gfx/turquoise.png')
 violet = pygame.image.load('gfx/violet.png')
 yellow = pygame.image.load('gfx/yellow.png')
+ghost = pygame.image.load('gfx/ghost.png')
 
 blue = pygame.transform.scale(blue, block_tuple)
 green = pygame.transform.scale(green, block_tuple)
@@ -58,6 +59,7 @@ red = pygame.transform.scale(red, block_tuple)
 turquoise = pygame.transform.scale(turquoise, block_tuple)
 violet = pygame.transform.scale(violet,  block_tuple)
 yellow = pygame.transform.scale(yellow, block_tuple)
+ghost = pygame.transform.scale(ghost, block_tuple)
 
 clock = pygame.time.Clock()
 elapsed = 0
@@ -74,9 +76,11 @@ game_over = False
 block_types = [(turquoise, 'I'), (blue, 'J'), (orange, 'L'), (yellow, 'O'), (green, 'S'), (violet, 'T'), (red, 'Z')]
 blocks = []
 cur_block = None
+ghost_block = None
 next_block = None
 
 def controller_tick():
+    global game_over
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return 0
@@ -103,7 +107,7 @@ def controller_tick():
             elif event.key == pygame.K_LEFT:
                 left_right('left')
             elif event.key == pygame.K_SPACE:
-                all_the_way_down()
+                all_the_way_down(cur_block)
                 new_block()
 
     global elapsed
@@ -111,7 +115,6 @@ def controller_tick():
     if elapsed >= (1000 / speed):
         if not down():
             if cur_block.pos[1] == default_location[1]:
-                global game_over
                 game_over = True
                 return 1
             new_block()
@@ -155,7 +158,15 @@ def new_block():
         new_type = random.choice(block_types)
         cur_block = Block(new_type[0], new_type[1], default_location, board_width, board_height)
 
+    new_ghost_block()
     new_next_block()
+
+def new_ghost_block():
+    global ghost_block
+    ghost_block = Block(ghost, cur_block.type, cur_block.pos, board_width, board_height)
+    for x in range(cur_block.rotation_counter):
+        ghost_block.rotate_90()
+    all_the_way_down(ghost_block)
 
 """Generates a new block. Is called by new_block()"""
 def new_next_block():
@@ -238,18 +249,18 @@ def delete_row(y):
     blocks = new_blocks
 
 """Moves the current block down to the bottom"""
-def all_the_way_down():
-    while cur_block.is_in_bounds('down'):
+def all_the_way_down(block):
+    while block.is_in_bounds('down'):
         if len(blocks) == 0:
-            cur_block.move('down')
+            block.move('down')
         else:
             found_collision = False
             for x in blocks:
-                if cur_block.detect_collision(x.pos, 'down'):
+                if block.detect_collision(x.pos, 'down'):
                     found_collision = True
 
             if not found_collision:
-                cur_block.move('down')
+                block.move('down')
             else:
                 return
 
@@ -271,6 +282,8 @@ def rotate():
                 cur_block.rotate_90()
             else:
                  cur_block.move('left')
+
+    new_ghost_block()
 
 """Checks if the current block would collide with something
 when moved in <direction>"""
@@ -301,20 +314,20 @@ def left_right(direction):
                 return
 
         cur_block.move(direction)
+        new_ghost_block()
 
 def view_tick():
-    if cur_block is None:
-        return
     screen.fill(Color('white'))
 
     render_borders()
     render_text()
 
     if not game_over:
+        ghost_block.render(screen)
+        cur_block.render(screen)
         for block in blocks:
             block.render(screen)
 
-        cur_block.render(screen)
     next_block.render(screen, pos = next_block_pos)
 
     pygame.display.update()
